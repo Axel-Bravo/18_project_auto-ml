@@ -20,7 +20,7 @@ class TestLoadFromFile(unittest.TestCase):
         test_data = test_path + 'load_from_file_ok_2' + '.csv'
 
         clf_ml = ml.AutoClf()
-        clf_ml.load_from_file(path_train=train_data, path_test=test_data)
+        clf_ml.load(train_data=train_data, test_data=test_data)
 
         assert_frame_equal(data_train, clf_ml._train)
         assert_frame_equal(data_test, clf_ml._test)
@@ -34,7 +34,7 @@ class TestLoadFromFile(unittest.TestCase):
         test_data = test_path + 'load_from_file_ok_2' + '.csv'
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_file, train_data, test_data)
+        self.assertRaises(Exception, clf_ml.load, train_data, test_data)
 
     def test_column_types_test_data(self):
         """
@@ -45,7 +45,7 @@ class TestLoadFromFile(unittest.TestCase):
         test_data = test_path + 'load_from_file_nok_col_type' + '.csv'
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_file, train_data, test_data)
+        self.assertRaises(Exception, clf_ml.load, train_data, test_data)
 
     def test_column_names_train_data(self):
         """
@@ -56,7 +56,7 @@ class TestLoadFromFile(unittest.TestCase):
         test_data = test_path + 'load_from_file_ok_2' + '.csv'
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_file, train_data, test_data)
+        self.assertRaises(Exception, clf_ml.load, train_data, test_data)
 
     def test_column_names_test_data(self):
         """
@@ -67,7 +67,7 @@ class TestLoadFromFile(unittest.TestCase):
         test_data = test_path + 'load_from_file_nok_y' + '.csv'
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_file, train_data, test_data)
+        self.assertRaises(Exception, clf_ml.load, train_data, test_data)
 
 
 class TestLoadFromMemory(unittest.TestCase):
@@ -83,7 +83,7 @@ class TestLoadFromMemory(unittest.TestCase):
         data_test = pd.read_csv(test_path + 'load_from_file_ok_2' + '.csv')
 
         clf_ml = ml.AutoClf()
-        clf_ml.load_from_memory(train_object=data_train, test_object=data_test)
+        clf_ml.load(train_data=data_train, test_data=data_test)
 
         assert_frame_equal(data_train, clf_ml._train)
         assert_frame_equal(data_test, clf_ml._test)
@@ -97,7 +97,7 @@ class TestLoadFromMemory(unittest.TestCase):
         data_test = pd.read_csv(test_path + 'load_from_file_ok_2' + '.csv')
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_memory, data_train, data_test)
+        self.assertRaises(Exception, clf_ml.load, data_train, data_test)
 
     def test_column_types_test_data(self):
         """
@@ -108,7 +108,7 @@ class TestLoadFromMemory(unittest.TestCase):
         data_test = pd.read_csv(test_path + 'load_from_file_nok_col_type' + '.csv')
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_memory, data_train, data_test)
+        self.assertRaises(Exception, clf_ml.load, data_train, data_test)
 
     def test_column_names_train_data(self):
         """
@@ -119,7 +119,7 @@ class TestLoadFromMemory(unittest.TestCase):
         data_test = pd.read_csv(test_path + 'load_from_file_ok_2' + '.csv')
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_memory, data_train, data_test)
+        self.assertRaises(Exception, clf_ml.load, data_train, data_test)
 
     def test_column_names_test_data(self):
         """
@@ -130,13 +130,8 @@ class TestLoadFromMemory(unittest.TestCase):
         data_test = pd.read_csv(test_path + 'load_from_file_nok_y' + '.csv')
 
         clf_ml = ml.AutoClf()
-        self.assertRaises(Exception, clf_ml.load_from_memory, data_train, data_test)
+        self.assertRaises(Exception, clf_ml.load, data_train, data_test)
 
 
 if __name__ == '__main__':
-    # Loaders subset
-    loaders = unittest.TestSuite()
-    loaders.addTests(TestLoadFromFile)
-    #loaders.addTests(TestLoadFromMemory)
-
-    unittest.main(unittest.run(loaders))
+    unittest.main()
