@@ -24,7 +24,6 @@ class AutoClf (object):
         :type path_test: str
         :return: Initialize object
         """
-
         names = ['Train', 'Test']
         paths = [path_train, path_test]
 
@@ -45,15 +44,35 @@ class AutoClf (object):
             except AssertionError:
                 raise Exception(name + ' data does not follow requirements')
 
-    def load_from_memory(self, train, test):
+    def load_from_memory(self, train_object, test_object):
+        """
+        Load data from the memory
+        :param train_object: train data
+        :type pd.DataFrame
+        :param test_object: test data
+        :type pd.DataFrame
+        :return: Initialize object
         """
 
-        :param train: contains a columns named "Y"
-        :type train: pd.DataFrame: all data needs to be numeric
-        :param test: contains a column named "Y"
-        :type test: pd.DataFrame: all data needs to be numeric
-        """
-        pass
+        names = ['Train', 'Test']
+        instances = [train_object, test_object]
+
+        for name, instance in zip(names, instances):
+
+            try:
+                assert_alert = name + ' data column types are not numeric'
+                assert(instance.shape == instance._get_numeric_data().shape), assert_alert
+
+                assert_alert = name + ' data has no "Y" column'
+                assert ("Y" in instance.columns), assert_alert
+
+                if name is "Train":
+                    self._train = instance
+                else:
+                    self._test = instance
+
+            except AssertionError:
+                raise Exception(name + ' data does not follow requirements')
 
 
     def classifiers_battle(self, **kwargs):
