@@ -50,8 +50,7 @@ class AutoClf (object):
             except AssertionError:
                 raise Exception(name + ' data does not follow requirements')
 
-
-    def classifiers_battle(self, **kwargs):
+    def model_battle(self, **kwargs):
         """
         Runs a classifier
         :param kwargs:
