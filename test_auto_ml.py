@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
-import auto_ml as ml
+import AutoMl as ml
 test_path = 'test/'
 
 
@@ -26,10 +26,10 @@ class TestLoad(unittest.TestCase):
                                (path_train_y, path_test), (data_train, data_test_y), (path_train, path_test_y),
                                (data_train, data_test_type), (path_train, path_test_type)]
 
-    def test_data_load_ok(self):
+    def test_load_data_pass(self):
         for train, test in self.data_test_pass:
-            clf_ml = ml.AutoClf()
-            clf_ml.load(train, test)
+            clf_ml = ml.AutoML()
+            clf_ml.load_data(train, test)
 
             if type(train) is str:
                 assert_frame_equal(pd.read_csv(train), clf_ml._train)
@@ -38,10 +38,10 @@ class TestLoad(unittest.TestCase):
                 assert_frame_equal(train, clf_ml._train)
                 assert_frame_equal(test, clf_ml._test)
 
-    def test_data_load_failed(self):
+    def test_load_data_fail(self):
         for train, test in self.data_test_fail:
-            clf_ml = ml.AutoClf()
-            self.assertRaises(Exception, clf_ml.load, train, test)
+            clf_ml = ml.AutoML()
+            self.assertRaises(Exception, clf_ml.load_data, train, test)
 
 
 if __name__ == '__main__':
