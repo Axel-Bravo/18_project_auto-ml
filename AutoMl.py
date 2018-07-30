@@ -14,6 +14,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.externals import joblib
 
 
 class AutoMl (object):
@@ -21,9 +22,10 @@ class AutoMl (object):
     Class that agglutinates all "auto" machine learning techniques for classification problems
     """
 
-    __slots__ = ['_train', '_test', '_parameters', '_category', '_goal', '_models']
+    __slots__ = ['_name', '_train', '_test', '_parameters', '_category', '_goal', '_models']
 
-    def __init__(self, category: str = 'supervised', goal: str = 'classification'):
+    def __init__(self, name: str, category: str = 'supervised', goal: str = 'classification'):
+        self._name: str = name
         self._train: pd.DataFrame = None
         self._test: pd.DataFrame = None
         self._parameters: dict = None
@@ -108,6 +110,18 @@ class AutoMl (object):
         self._parameters = {'names': classifiers_names, 'algorithms': classifiers,
                             'hyperparameters': classifiers_params, 'iterations': classifiers_iterations}
 
+    def save_model(self, file_path: str, best_model: bool = False):
+        """
+        Saves the model into de disk on a specified path
+        :param file_path: file path on the disk
+        :param best_model: True: save only the best model | False: save the best model fo each type of algorithm
+        :return: None | saves model into disk
+        """
+        if best_model:
+            joblib.dump(self._models[0][1][1].best_estimator_, filename=file_path + self._name + '.pkl', compress=3)
+        else:
+            joblib.dump(self._models, filename=file_path + self._name + '.pkl', compress=3)
+
     def optimize(self, n_jobs: int = 2):
         """
         Realizes a
@@ -121,8 +135,8 @@ class AutoMl (object):
         pca_params = {'pca__n_components': randint(2, self._train.shape[1])}
 
         for name, algo, hyper_param, iter in zip(self._parameters['names'], self._parameters['algorithms'],
-                                                           self._parameters['hyperparameters'],
-                                                           self._parameters['iterations']):
+                                                 self._parameters['hyperparameters'], self._parameters['iterations']):
+
             print("Starting model {}".format(name))
             ml_pipe = Pipeline([('scaler', StandardScaler()),
                                 ('pca', PCA()),
@@ -140,3 +154,9 @@ class AutoMl (object):
         self._models = models
         print('The machine learning battle has finished')
 
+    def predict(self) -> pd.DataFrame:
+        """
+        Predicts the results with the best model issue form the optimization process
+        :return: predictions
+        """
+        return self._models[0][1][1].best_estimator_.predict(self._test)
