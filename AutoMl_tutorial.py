@@ -23,7 +23,6 @@ y_train.columns = ['Y']
 train = pd.concat([X_train, y_train], axis=1)
 
 #%% AutoMl use
-bot = ml.AutoMl()
+bot = ml.AutoMl(name='test')
 bot.load_data(train_data=train, test_data=train)
-bot.load_parameters()
 bot.optimize(n_jobs=1)
