@@ -156,7 +156,6 @@ class AutoMl (object):
 
         return y_pred
 
-
     # Internal methods
     def _load_parameters(self) -> dict:
         """
@@ -197,32 +196,41 @@ class AutoMl (object):
             algorithm_iterations = [60, 60, 60, 60, 60, 60, 60, 1, 60]
 
         if self._category is 'supervised' and self._goal is 'regression':
-            from sklearn.linear_model import LinearRegression, ElasticNetCV, PassiveAggressiveRegressor, \
-                TheilSenRegressor, SGDRegressor
+            from sklearn.linear_model import LinearRegression, Ridge, Lasso, Lars, BayesianRidge, ElasticNetCV,\
+                PassiveAggressiveRegressor, TheilSenRegressor, SGDRegressor
             from sklearn.neural_network import MLPRegressor
             from sklearn.neighbors import KNeighborsRegressor
             from sklearn.svm import SVR
             from sklearn.tree import DecisionTreeRegressor
             from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, GradientBoostingRegressor
 
-            algorithm_names = ["Linear Regression", "ElasticNetCV", "PassiveAggressive Regressor", "TheilSen Regressor",
-                               "SGD Regressor", "K-Nearest Neighbors", "Linear SVM", "RBF SVM", "Decision Tree",
-                               "Random Forest", "Gradient Boosting", "Neural Net", "AdaBoost"]
+            algorithm_names = ["Linear Regression",  "Linear Lars", "Linear Ridge", "Linear Lasso", "BayesianRidge",
+                               "ElasticNetCV", "PassiveAggressive Regressor", "TheilSen Regressor", "SGD Regressor",
+                               "K-Nearest Neighbors", "Linear SVM", "RBF SVM", "Decision Tree", "Random Forest",
+                               "Gradient Boosting", "Neural Net", "AdaBoost"]
 
-            algorithms = [LinearRegression(), ElasticNetCV(), PassiveAggressiveRegressor(), TheilSenRegressor(),
-                          SGDRegressor(), KNeighborsRegressor(), SVR(), SVR(), DecisionTreeRegressor(),
-                          RandomForestRegressor(), GradientBoostingRegressor(), MLPRegressor(), AdaBoostRegressor()]
+            algorithms = [LinearRegression(), Lars(), Ridge(), Lasso(), BayesianRidge(), ElasticNetCV(),
+                          PassiveAggressiveRegressor(), TheilSenRegressor(), SGDRegressor(), KNeighborsRegressor(),
+                          SVR(), SVR(), DecisionTreeRegressor(), RandomForestRegressor(), GradientBoostingRegressor(),
+                          MLPRegressor(), AdaBoostRegressor()]
 
             algorithm_params = [
                 {},  # Linear Regression
+                {},  # Linear Lars Regression
+                {'rgs__alpha': uniform(1e-9, 1)},  # Linear Ridge Regression
+                {'rgs__alpha': uniform(1e-9, 1)},  # Linear Lasso Regression
+                {'rgs__n_iter': randint(300, 600), 'rgs__tol': uniform(1e-5, 1e-5),
+                 'rgs__alpha_1': uniform(1e-9, 1e-3), 'rgs__alpha_2':  uniform(1e-9, 1e-3),
+                 'rgs__lambda_1':  uniform(1e-9, 1e-3), 'rgs__lambda_2':  uniform(1e-9, 1e-3)},
+                # Bayesian Rigde Regression
                 {'rgs__l1_ratio': uniform(0, 1.0), 'rgs__n_alphas': randint(2, 6 + 1), 'rgs__tol': uniform(1e-3, 0.21)},
                 # ElasticNetCV
-                {'rgs__tol': uniform(1e-3, 0.21), 'rgs__epsilon': uniform(0.1, 2.5)},  # PassiveAggressive Regressor
-                {'rgs__max_subpopulation': randint(5e3, 5e4), 'rgs__tol': uniform(5.e-4, 5.e-3)},  # TheilSen Regressor
+                {'rgs__tol': uniform(1e-3, 0.21), 'rgs__epsilon': uniform(0.1, 2.5)},  # PassiveAggressive Regression
+                {'rgs__max_subpopulation': randint(5e3, 5e4), 'rgs__tol': uniform(5.e-4, 5.e-3)},  # TheilSen Regression
                 {'rgs__loss': ['epsilon_insensitive', 'squared_epsilon_insensitive', 'huber', 'squared_loss'],
                  'rgs__alpha': uniform(5e-5, 5e-4), 'rgs__penalty': ['none', 'l2', 'l1', 'elasticnet'],
                  'rgs__max_iter': [1000],
-                 'rgs__tol': uniform(5e-4, 5e-3)},  # SGDRegressor
+                 'rgs__tol': uniform(5e-4, 5e-3)},  # SGD Regression
                 {'rgs__n_neighbors': randint(2, 15), 'rgs__weights': ['uniform', 'distance'],
                  'rgs__leaf_size': randint(20, 40)},  # KNN
                 {'rgs__C': uniform(0.1, 2.0), 'rgs__kernel': ['linear']},  # SVR - Linear
@@ -237,11 +245,11 @@ class AutoMl (object):
                  'rgs__loss': ['ls', 'lad', 'huber']},  # Gradient Boosting
                 {'rgs__activation': ['tanh', 'logistic', 'relu'], 'rgs__alpha': uniform(5e-5, 5e-4),
                  'rgs__learning_rate': ['constant', 'invscaling', 'adaptive'], 'rgs__early_stopping': [True],
-                 "rgs__max_iter": [1000], "rgs__early_stopping ": [True]},  # MLP Regressor
+                 "rgs__max_iter": [1000], "rgs__early_stopping ": [True]},  # MLP Regression
                 {'rgs__learning_rate': uniform(1e-3, 5e-2),
-                 'rgs__loss': ['linear', 'square', 'exponential']}]  # Adaboost Regressor
+                 'rgs__loss': ['linear', 'square', 'exponential']}]  # Adaboost Regression
 
-            algorithm_iterations = [60] * len(algorithm_params)
+            algorithm_iterations = [1] * 2 + [60] * (len(algorithm_params) - 2)
 
         return {'names': algorithm_names, 'algorithms': algorithms, 'hyperparameters': algorithm_params,
                 'iterations': algorithm_iterations}
