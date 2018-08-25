@@ -23,6 +23,6 @@ y_train.columns = ['Y']
 train = pd.concat([X_train, y_train], axis=1)
 
 #%% AutoMl use
-bot = ml.AutoMl(name='test')
+bot = ml.AutoMl(name='test', category='supervised', goal='classification', modality='kaggle')
 bot.load_data(train_data=train, test_data=train)
 bot.optimize(n_jobs=1)

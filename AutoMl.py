@@ -12,20 +12,26 @@ from sklearn.externals import joblib
 class AutoMl (object):
     """
     Class that agglutinates all "auto" machine learning techniques for classification problems
+
     Modes available:
         - Supervised | Classification
         - Supervised | Regression
+
+    Modality:
+        - 'kaggle': mode suited for Kaggle competitions, i.e., we do not have the "y_test"
+        - 'regular': mode suited for cases where we have complete train and test sets
     """
 
-    __slots__ = ['_name', '_train', '_test', '_parameters', '_category', '_goal', '_models']
+    __slots__ = ['_name', '_train', '_test', '_parameters', '_category', '_goal', '_modality', '_models']
 
-    def __init__(self, name: str, category: str = 'supervised', goal: str = 'classification'):
+    def __init__(self, name: str, category: str = 'supervised', goal: str = 'classification', modality: str = 'kaggle'):
         self._name: str = name
         self._train: pd.DataFrame = None
         self._test: pd.DataFrame = None
         self._parameters: dict = None
         self._category: str = category
         self._goal: str = goal
+        self._modality: str = modality
         self._models: dict = None
 
     # I/O methods
@@ -55,13 +61,22 @@ class AutoMl (object):
                     assert_alert = name + ' data column types are not numeric'
                     assert(temp.shape == temp._get_numeric_data().shape), assert_alert
 
-                    assert_alert = name + ' data has no "Y" column'
-                    assert ("Y" in temp.columns), assert_alert
+                    if self._modality is 'kaggle':
+                        if name is "Train":
+                            assert_alert = name + ' data has no "Y" column'
+                            assert ("Y" in temp.columns), assert_alert
+                            self._train = temp
+                        else:
+                            self._test = temp
 
-                    if name is "Train":
-                        self._train = temp
-                    else:
-                        self._test = temp
+                    if self._modality is 'regular':
+                        assert_alert = name + ' data has no "Y" column'
+                        assert ("Y" in temp.columns), assert_alert
+
+                        if name is "Train":
+                            self._train = temp
+                        else:
+                            self._test = temp
 
                 except AssertionError:
                     raise Exception(name + ' data does not follow requirements')
@@ -86,26 +101,26 @@ class AutoMl (object):
         """
 
         y_train = self._train['Y']
-        X_train = self._train.drop(columns=['Y'])
+        x_train = self._train.drop(columns=['Y'])
         models = {}
 
         self._load_parameters()
         pca_params = {'pca__n_components': randint(2, self._train.shape[1])}
         evaluator = self._evaluator()
 
-        for name, algo, hyper_param, iter in zip(self._parameters['names'], self._parameters['algorithms'],
+        for name, algorithm, hyper_param, iterations in zip(self._parameters['names'], self._parameters['algorithms'],
                                                  self._parameters['hyperparameters'], self._parameters['iterations']):
 
             print("Starting model {}".format(name))
             ml_pipe = Pipeline([('scaler', StandardScaler()),
                                 ('pca', PCA()),
-                                ('algo', algo)])
+                                ('algo', algorithm)])
 
             hyper_param = {**pca_params, **hyper_param}
 
-            random_search = RandomizedSearchCV(ml_pipe, param_distributions=hyper_param, n_iter=iter,
+            random_search = RandomizedSearchCV(ml_pipe, param_distributions=hyper_param, n_iter=iterations,
                                                cv=5, scoring=evaluator, n_jobs=n_jobs, verbose=1)
-            random_search.fit(X_train, y_train)
+            random_search.fit(x_train, y_train)
 
             models[name] = (round(random_search.best_score_, 3), random_search)
 
