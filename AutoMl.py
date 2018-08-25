@@ -22,16 +22,24 @@ class AutoMl (object):
         - 'regular': mode suited for cases where we have complete train and test sets
     """
 
-    __slots__ = ['_name', '_train', '_test', '_parameters', '_category', '_goal', '_modality', '_models']
+    __slots__ = ['_name', '_x_train', '_x_test', '_y_train', '_y_test', '_category', '_goal', '_modality', '_models']
 
     def __init__(self, name: str, category: str = 'supervised', goal: str = 'classification', modality: str = 'kaggle'):
+
         self._name: str = name
-        self._train: pd.DataFrame = None
-        self._test: pd.DataFrame = None
-        self._parameters: dict = None
+
+        # Data for the model
+        self._x_train: pd.DataFrame = None
+        self._y_train: pd.DataFrame = None
+        self._x_test: pd.DataFrame = None
+        self._y_test: pd.DataFrame = None
+
+        # Type of model to build
         self._category: str = category
         self._goal: str = goal
         self._modality: str = modality
+
+        # Results of the model training
         self._models: dict = None
 
     # I/O methods
@@ -65,18 +73,21 @@ class AutoMl (object):
                         if name is "Train":
                             assert_alert = name + ' data has no "Y" column'
                             assert ("Y" in temp.columns), assert_alert
-                            self._train = temp
+                            self._y_train = temp['Y']
+                            self._x_train = temp.drop(columns=['Y'])
                         else:
-                            self._test = temp
+                            self._y_test = temp['Y']
+                            self._x_test = temp.drop(columns=['Y'])
 
                     if self._modality is 'regular':
                         assert_alert = name + ' data has no "Y" column'
                         assert ("Y" in temp.columns), assert_alert
 
                         if name is "Train":
-                            self._train = temp
+                            self._y_train = temp['Y']
+                            self._x_train = temp.drop(columns=['Y'])
                         else:
-                            self._test = temp
+                            self._x_test = temp.drop(columns=['Y'])
 
                 except AssertionError:
                     raise Exception(name + ' data does not follow requirements')
@@ -100,16 +111,13 @@ class AutoMl (object):
         :return:
         """
 
-        y_train = self._train['Y']
-        x_train = self._train.drop(columns=['Y'])
         models = {}
-
-        self._load_parameters()
-        pca_params = {'pca__n_components': randint(2, self._train.shape[1])}
+        parameters = self._load_parameters()
+        pca_params = {'pca__n_components': randint(2, self._x_train.shape[1])}
         evaluator = self._evaluator()
 
-        for name, algorithm, hyper_param, iterations in zip(self._parameters['names'], self._parameters['algorithms'],
-                                                 self._parameters['hyperparameters'], self._parameters['iterations']):
+        for name, algorithm, hyper_param, iterations in zip(parameters['names'], parameters['algorithms'],
+                                                            parameters['hyperparameters'], parameters['iterations']):
 
             print("Starting model {}".format(name))
             ml_pipe = Pipeline([('scaler', StandardScaler()),
@@ -120,13 +128,13 @@ class AutoMl (object):
 
             random_search = RandomizedSearchCV(ml_pipe, param_distributions=hyper_param, n_iter=iterations,
                                                cv=5, scoring=evaluator, n_jobs=n_jobs, verbose=1)
-            random_search.fit(x_train, y_train)
+            random_search.fit(self._x_train, self._y_train)
 
             models[name] = (round(random_search.best_score_, 3), random_search)
 
-
-        models = sorted(models.items(), key=lambda kv: kv[1], reverse=True)  # Sorting models by scoring
+        models = self._models_sorter(models)
         self._models = models
+
         print('The machine learning battle has finished')
 
     def predict(self) -> pd.DataFrame:
@@ -134,13 +142,13 @@ class AutoMl (object):
         Predicts the results with the best model issue form the optimization process
         :return: predictions
         """
-        return self._models[0][1][1].best_estimator_.predict(self._test)
+        return self._models[0][1][1].best_estimator_.predict(self._x_test)
 
     # Internal methods
-    def _load_parameters(self):
+    def _load_parameters(self) -> dict:
         """
         Loads the parameters to be used in the machine learning battle
-        :return:
+        :return: dictionary with all the parameter for the required model
         """
 
         if self._category is 'supervised' and self._goal is 'classification':
@@ -222,8 +230,8 @@ class AutoMl (object):
 
             algorithm_iterations = [60] * len(algorithm_params)
 
-        self._parameters = {'names': algorithm_names, 'algorithms': algorithms,
-                            'hyperparameters': algorithm_params, 'iterations': algorithm_iterations}
+        return {'names': algorithm_names, 'algorithms': algorithms, 'hyperparameters': algorithm_params,
+                'iterations': algorithm_iterations}
 
     def _evaluator(self) -> str:
         """
