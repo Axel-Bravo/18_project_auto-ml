@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from scipy.stats import randint, expon, uniform
 
@@ -137,12 +138,24 @@ class AutoMl (object):
 
         print('The machine learning battle has finished')
 
-    def predict(self) -> pd.DataFrame:
+    def predict(self) -> np.ndarray:
         """
         Predicts the results with the best model issue form the optimization process
         :return: predictions
         """
-        return self._models[0][1][1].best_estimator_.predict(self._x_test)
+        y_pred = []
+        under_value = 0
+        upper_values = list()
+        upper_values.extend(range(10000, self._x_test.shape[0], 10000))
+        upper_values.append(self._x_test.shape[0] + 1)
+
+        for upper_value in upper_values:
+            y_pred_temp = self._models[0][1][1].best_estimator_.predict(self._x_test[under_value: upper_value])
+            y_pred = np.append(y_pred, y_pred_temp)
+            under_value = upper_value
+
+        return y_pred
+
 
     # Internal methods
     def _load_parameters(self) -> dict:
