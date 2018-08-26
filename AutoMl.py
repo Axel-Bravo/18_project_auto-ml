@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import randint, expon, uniform
+from random import choices
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -106,6 +107,30 @@ class AutoMl (object):
             joblib.dump(self._models, filename=file_path + self._name + '.pkl', compress=3)
 
     # Executing methods
+    def baseline_algorithm(self):
+        from sklearn.metrics import accuracy_score, mean_squared_error
+
+        """
+        Give the results of the algorithm if we use a naive approach, i.e. use the mean value for regression and the
+        :return:
+        """
+        if self._modality is 'kaggle':
+            print('Kaggle modality does no allow to check the algorithm tru performance on local')
+
+        if self._modality is 'regular':
+            if self._category is 'supervised' and self._goal is 'classification':
+                # We generate a naive prediction sample based on the distribution of the "y_train" sample
+                freq_table = self._y_train.groupby(self._y_train).size()
+                population = list(freq_table.index)
+                weights = list(freq_table.values/sum(freq_table.values))
+                y_baseline_pred = choices(population, weights, k=len(self._y_test))
+                print('The naive accuracy score is: {}'.format(accuracy_score(self._y_test, y_baseline_pred)))
+
+            if self._category is 'supervised' and self._goal is 'regression':
+                # We generate a naive prediction sample based on the mean value of the "y_train" sample
+                y_baseline_pred = [self._y_train.mean()] * len(self._y_test)
+                print('The naive accuracy score is: {}'.format(mean_squared_error(self._y_test, y_baseline_pred)))
+
     def optimize(self, n_jobs: int = 2):
         """
         Realizes the battle model optimization
