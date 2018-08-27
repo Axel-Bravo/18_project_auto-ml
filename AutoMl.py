@@ -75,20 +75,20 @@ class AutoMl (object):
                         if name is "Train":
                             assert_alert = name + ' data has no "Y" column'
                             assert ("Y" in temp.columns), assert_alert
-                            self._y_train = temp['Y']
+                            self._y_train = temp.loc[:, 'Y']
                             self._x_train = temp.drop(columns=['Y'])
                         else:
-                            self._y_test = temp['Y']
-                            self._x_test = temp.drop(columns=['Y'])
+                            self._x_test = temp
 
                     if self._modality is 'regular':
                         assert_alert = name + ' data has no "Y" column'
                         assert ("Y" in temp.columns), assert_alert
 
                         if name is "Train":
-                            self._y_train = temp['Y']
+                            self._y_train = temp.loc[:, 'Y']
                             self._x_train = temp.drop(columns=['Y'])
                         else:
+                            self._y_test = temp.loc[:, 'Y']
                             self._x_test = temp.drop(columns=['Y'])
 
                 except AssertionError:
