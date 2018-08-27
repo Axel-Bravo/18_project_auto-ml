@@ -115,7 +115,7 @@ class AutoMl (object):
         :return:
         """
         if self._modality is 'kaggle':
-            print('Kaggle modality does no allow to check the algorithm tru performance on local')
+            print('Kaggle modality does no allow to check the algorithm through performance on local')
 
         if self._modality is 'regular':
             if self._category is 'supervised' and self._goal is 'classification':
@@ -242,37 +242,36 @@ class AutoMl (object):
             algorithm_params = [
                 {},  # Linear Regression
                 {},  # Linear Lars Regression
-                {'rgs__alpha': uniform(1e-9, 1)},  # Linear Ridge Regression
-                {'rgs__alpha': uniform(1e-9, 1)},  # Linear Lasso Regression
-                {'rgs__n_iter': randint(300, 600), 'rgs__tol': uniform(1e-5, 1e-5),
-                 'rgs__alpha_1': uniform(1e-9, 1e-3), 'rgs__alpha_2':  uniform(1e-9, 1e-3),
-                 'rgs__lambda_1':  uniform(1e-9, 1e-3), 'rgs__lambda_2':  uniform(1e-9, 1e-3)},
+                {'algo__alpha': uniform(1e-9, 1)},  # Linear Ridge Regression
+                {'algo__alpha': uniform(1e-9, 1)},  # Linear Lasso Regression
+                {'algo__n_iter': randint(300, 600), 'algo__tol': uniform(1e-5, 1e-5),
+                 'algo__alpha_1': uniform(1e-9, 1e-3), 'algo__alpha_2':  uniform(1e-9, 1e-3),
+                 'algo__lambda_1':  uniform(1e-9, 1e-3), 'algo__lambda_2':  uniform(1e-9, 1e-3)},
                 # Bayesian Rigde Regression
-                {'rgs__l1_ratio': uniform(0, 1.0), 'rgs__n_alphas': randint(2, 6 + 1), 'rgs__tol': uniform(1e-3, 0.21)},
+                {'algo__l1_ratio': uniform(0, 1.0), 'algo__n_alphas': randint(2, 6 + 1), 'algo__tol': uniform(1e-3, 0.21)},
                 # ElasticNetCV
-                {'rgs__tol': uniform(1e-3, 0.21), 'rgs__epsilon': uniform(0.1, 2.5)},  # PassiveAggressive Regression
-                {'rgs__max_subpopulation': randint(5e3, 5e4), 'rgs__tol': uniform(5.e-4, 5.e-3)},  # TheilSen Regression
-                {'rgs__loss': ['epsilon_insensitive', 'squared_epsilon_insensitive', 'huber', 'squared_loss'],
-                 'rgs__alpha': uniform(5e-5, 5e-4), 'rgs__penalty': ['none', 'l2', 'l1', 'elasticnet'],
-                 'rgs__max_iter': [1000],
-                 'rgs__tol': uniform(5e-4, 5e-3)},  # SGD Regression
-                {'rgs__n_neighbors': randint(2, 15), 'rgs__weights': ['uniform', 'distance'],
-                 'rgs__leaf_size': randint(20, 40)},  # KNN
-                {'rgs__C': uniform(0.1, 2.0), 'rgs__kernel': ['linear']},  # SVR - Linear
-                {'rgs__C': uniform(0.1, 2.0), 'rgs__gamma': uniform(0.1, 2.5), 'rgs__kernel': ['rbf', 'sigmoid']},
-                # SVR - RBF
-                {'rgs__max_depth': randint(2, 8), 'rgs__min_samples_split': randint(2, 8),
-                 'rgs__max_features': ['auto', 'sqrt', 'log2'], 'rgs__criterion': ['mse', 'mae']},  # Decision Tree
-                {'rgs__max_depth': randint(2, 8), 'rgs__min_samples_split': randint(2, 8),
-                 'rgs__max_features': ['auto', 'sqrt', 'log2'], 'rgs__criterion': ['mse', 'mae']},  # Random Forest
-                {'rgs__max_depth': randint(2, 8), 'rgs__min_samples_split': randint(2, 8),
-                 'rgs__max_features': ['auto', 'sqrt', 'log2'], 'rgs__criterion': ['mae', 'friedman_mse'],
-                 'rgs__loss': ['ls', 'lad', 'huber']},  # Gradient Boosting
-                {'rgs__activation': ['tanh', 'logistic', 'relu'], 'rgs__alpha': uniform(5e-5, 5e-4),
-                 'rgs__learning_rate': ['constant', 'invscaling', 'adaptive'], 'rgs__early_stopping': [True],
-                 "rgs__max_iter": [1000], "rgs__early_stopping ": [True]},  # MLP Regression
-                {'rgs__learning_rate': uniform(1e-3, 5e-2),
-                 'rgs__loss': ['linear', 'square', 'exponential']}]  # Adaboost Regression
+                {'algo__tol': uniform(1e-3, 0.21), 'algo__epsilon': uniform(0.1, 2.5)},  # PassiveAggressive Regression
+                {'algo__max_subpopulation': randint(5e3, 5e4), 'algo__tol': uniform(5.e-4, 5.e-3)},  # TheilSen Regression
+                {'algo__loss': ['epsilon_insensitive', 'squared_epsilon_insensitive', 'huber', 'squared_loss'],
+                 'algo__alpha': uniform(5e-5, 5e-4), 'algo__penalty': ['none', 'l2', 'l1', 'elasticnet'],
+                 'algo__max_iter': [1000], 'algo__tol': uniform(5e-4, 5e-3)},  # SGD Regression
+                {'algo__n_neighbors': randint(2, 15), 'algo__weights': ['uniform', 'distance'],
+                 'algo__leaf_size': randint(20, 40)},  # KNN
+                {'algo__C': uniform(0.1, 2.0), 'algo__kernel': ['linear']},  # SVR - Linear
+                {'algo__C': uniform(0.1, 2.0), 'algo__gamma': uniform(0.1, 2.5),
+                 'algo__kernel': ['rbf', 'sigmoid']},  # SVR - RBF
+                {'algo__max_depth': randint(2, 8), 'algo__min_samples_split': randint(2, 8),
+                 'algo__max_features': ['auto', 'sqrt', 'log2'], 'algo__criterion': ['mse', 'mae']},  # Decision Tree
+                {'algo__max_depth': randint(2, 8), 'algo__min_samples_split': randint(2, 8),
+                 'algo__max_features': ['auto', 'sqrt', 'log2'], 'algo__criterion': ['mse', 'mae']},  # Random Forest
+                {'algo__max_depth': randint(2, 8), 'algo__min_samples_split': randint(2, 8),
+                 'algo__max_features': ['auto', 'sqrt', 'log2'], 'algo__criterion': ['mae', 'friedman_mse'],
+                 'algo__loss': ['ls', 'lad', 'huber']},  # Gradient Boosting
+                {'algo__activation': ['tanh', 'logistic', 'relu'], 'algo__alpha': uniform(5e-5, 5e-4),
+                 'algo__learning_rate': ['constant', 'invscaling', 'adaptive'], 'algo__early_stopping': [True],
+                 "algo__max_iter": [1000]},  # MLP Regression
+                {'algo__learning_rate': uniform(1e-3, 5e-2),
+                 'algo__loss': ['linear', 'square', 'exponential']}]  # Adaboost Regression
 
             algorithm_iterations = [1] * 2 + [60] * (len(algorithm_params) - 2)
 
