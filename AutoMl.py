@@ -294,8 +294,6 @@ class AutoMl (object):
         Selects the evaluator taking in consideration the problem we are solving
         :return:
         """
-        if self._category is 'supervised' and self._goal is 'classification':
-            return sorted(models.items(), key=lambda kv: kv[1], reverse=True)  # Higher is better
 
-        if self._category is 'supervised' and self._goal is 'regression':
-            return sorted(models.items(), key=lambda kv: kv[1], reverse=False)  # Lower is better
+        return sorted(models.items(), key=lambda kv: kv[1], reverse=True)  # Higher is better
+
