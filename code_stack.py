@@ -1,25 +1,7 @@
-# %%  trick sampling
-
-"""
-1 - Categorico?
-        - crea categoria falsa con muchos datos
-
-    regresion?
-        - crea categoria falsa + categorias para los resultados
-
-2 - applica smote o adasyn
-
-3 - sobre escribe los resultados del train
-
-4 - Testear
-
-5 - close #19 y #20
-"""
-
+# %%  Advanced Sampler
 import numpy as np
 import pandas as pd
 from math import floor
-from sklearn.preprocessing import QuantileTransformer
 
 data = pd.read_csv('data/data_train_cat_nas.csv')
 data.drop(columns=['Unnamed: 0', 'Id'], inplace=True)
@@ -34,22 +16,16 @@ if num_categories > floor(len(data['Y'])/smote_k_neighbors):  # Number of catego
     num_categories = floor(len(data['Y'])/smote_k_neighbors)
     print('Number of synthetic categories has been limited, due to "SMOTE" requirements.')
 
-q_transformer = QuantileTransformer()
-temp_Y = q_transformer.fit_transform(data['Y'].sort_values().values.reshape(-1, 1))
-temp_Y_category = pd.DataFrame(np.linspace(start=0, stop=len(temp_Y),num=num_categories+1))
+temp_Y_category = pd.DataFrame(np.linspace(start=0, stop=len(data['Y']), num=num_categories+1))
 temp_Y_category = temp_Y_category.apply(lambda x: floor(float(x)), axis=1)
 
-temp_Y = pd.concat([pd.DataFrame(temp_Y, columns=['Y']),
-                    pd.DataFrame([0]*len(temp_Y), columns=['Y_category'])], axis=1)
+temp_Y = pd.DataFrame([0]*len(data['Y']), columns=['Y_category'])
 
-for element in range(1, len(temp_Y['Y'])):
-    temp_Y.iloc[element, 1] = temp_Y_category[temp_Y_category < element].index.max()  # Assign the proper category
+for element in range(1, len(data['Y'])):
+    temp_Y.iloc[element, 0] = temp_Y_category[temp_Y_category < element].index.max()  # Assign the proper category
 
-temp_Y['Y'] = q_transformer.inverse_transform(temp_Y['Y'].values.reshape(-1, 1))
+data = data.sort_values('Y').reset_index(drop=True)
 data['Y_category'] = temp_Y['Y_category'].values
-
-
-
 
 dummy_cat_size = round(data_size_desired/(num_categories + 1))
 if dummy_cat_size > temp_Y.groupby('Y_category').size().max():  # New category will do an effect
